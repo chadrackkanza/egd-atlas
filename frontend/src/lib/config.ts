@@ -13,6 +13,18 @@ const defaultConfig = {
 
 // Function to load runtime configuration
 export async function loadRuntimeConfig(): Promise<void> {
+  const runtimeConfigEnabled =
+    import.meta.env.PROD ||
+    import.meta.env.VITE_RUNTIME_CONFIG_ENABLED === 'true';
+
+  if (!runtimeConfigEnabled) {
+    console.log(
+      'Skipping runtime config fetch in local development; using Vite env/default config.'
+    );
+    configLoading = false;
+    return;
+  }
+
   try {
     console.log('🔧 DEBUG: Starting to load runtime config...');
     // Try to load configuration from a config endpoint
