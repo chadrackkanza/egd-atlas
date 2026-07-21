@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chadrackkanza.github.io/egd-atlas/sitemap.xml
