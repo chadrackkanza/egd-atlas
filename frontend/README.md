@@ -77,3 +77,13 @@ Notes:
 
 - The Vite `base` path is computed from the GitHub repository name during CI, so project pages such as `https://user.github.io/repo/` work without manual edits.
 - The build also emits `404.html` and `.nojekyll` so React Router routes keep working after a refresh on GitHub Pages.
+
+## Deploy To Vercel
+
+The repository root now includes a `vercel.json` that builds the `frontend/` app and serves `frontend/dist`.
+There is also a `frontend/vercel.json` if you prefer setting Vercel's `Root Directory` to `frontend`.
+
+- If you import the whole repository into Vercel, the build uses `cd frontend && npm ci` and `cd frontend && npm run build`.
+- If you set `Root Directory` to `frontend`, Vercel can use the local `frontend/vercel.json` and the default Vite build flow.
+- For production API calls, define `VITE_API_BASE_URL` in the Vercel project environment variables if your API is external.
+- The Vercel rewrite sends SPA routes to `/index.html`, which is required for `react-router-dom` with `BrowserRouter`.
