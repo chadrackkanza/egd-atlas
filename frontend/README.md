@@ -63,3 +63,17 @@ pnpm run dev
 ```shell
 pnpm run build
 ```
+
+## Deploy To GitHub Pages
+
+This frontend can be deployed from GitHub Actions with GitHub Pages.
+
+1. Push the repository to GitHub.
+2. In GitHub, open `Settings > Pages` and set `Source` to `GitHub Actions`.
+3. Optionally define the repository variable `VITE_API_BASE_URL` if the frontend should call an external API in production.
+4. The workflow at `.github/workflows/deploy-frontend-gh-pages.yml` will build from `frontend/` and publish `frontend/dist`.
+
+Notes:
+
+- The Vite `base` path is computed from the GitHub repository name during CI, so project pages such as `https://user.github.io/repo/` work without manual edits.
+- The build also emits `404.html` and `.nojekyll` so React Router routes keep working after a refresh on GitHub Pages.

@@ -8,14 +8,16 @@ let configLoading = true;
 
 // Default fallback configuration
 const defaultConfig = {
-  API_BASE_URL: 'http://127.0.0.1:8000', // Only used if runtime config fails to load
+  API_BASE_URL: import.meta.env.PROD ? '/' : 'http://127.0.0.1:8000',
 };
 
 // Function to load runtime configuration
 export async function loadRuntimeConfig(): Promise<void> {
   const runtimeConfigEnabled =
-    import.meta.env.PROD ||
-    import.meta.env.VITE_RUNTIME_CONFIG_ENABLED === 'true';
+    import.meta.env.VITE_RUNTIME_CONFIG_ENABLED === 'true' ||
+    (import.meta.env.PROD &&
+      import.meta.env.VITE_RUNTIME_CONFIG_ENABLED !== 'false' &&
+      !import.meta.env.VITE_API_BASE_URL);
 
   if (!runtimeConfigEnabled) {
     console.log(
@@ -26,9 +28,16 @@ export async function loadRuntimeConfig(): Promise<void> {
   }
 
   try {
-    console.log('🔧 DEBUG: Starting to load runtime config...');
+    console.log('Starting to load runtime config...');
+    const runtimeConfigUrl =
+      import.meta.env.VITE_RUNTIME_CONFIG_URL?.trim() ||
+      new URL(
+        './api/config',
+        `${window.location.origin}${import.meta.env.BASE_URL}`
+      ).toString();
+
     // Try to load configuration from a config endpoint
-    const response = await fetch('/api/config');
+    const response = await fetch(runtimeConfigUrl);
     if (response.ok) {
       const contentType = response.headers.get('content-type');
       // Only parse as JSON if the response is actually JSON
@@ -41,18 +50,13 @@ export async function loadRuntimeConfig(): Promise<void> {
         );
       }
     } else {
-      console.log(
-        '🔧 DEBUG: Config fetch failed with status:',
-        response.status
-      );
+      console.log('Config fetch failed with status:', response.status);
     }
   } catch (error) {
     console.log('Failed to load runtime config, using defaults:', error);
   } finally {
     configLoading = false;
-    console.log(
-      '🔧 DEBUG: Config loading finished, configLoading set to false'
-    );
+    console.log('Config loading finished, configLoading set to false');
   }
 }
 

@@ -28,16 +28,39 @@ process.env.VITE_APP_LOGO_URL ??= process.env.OVERVIEW_LOGO_URL ?? 'https://publ
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function ensureBuildOutDir() {
+function normalizeBasePath(basePath?: string): string {
+  if (!basePath) {
+    return '/';
+  }
+
+  const trimmed = basePath.trim();
+  if (!trimmed || trimmed === '/') {
+    return '/';
+  }
+
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}/`;
+}
+
+function ensureBuildArtifacts() {
   let outDir = path.resolve(__dirname, 'dist');
 
   return {
-    name: 'ensure-build-out-dir',
+    name: 'ensure-build-artifacts',
     configResolved(config) {
       outDir = path.resolve(config.root, config.build.outDir);
     },
     writeBundle() {
       fs.mkdirSync(outDir, { recursive: true });
+
+      const indexPath = path.join(outDir, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        fs.copyFileSync(indexPath, path.join(outDir, '404.html'));
+      }
+
+      const noJekyllPath = path.join(outDir, '.nojekyll');
+      if (!fs.existsSync(noJekyllPath)) {
+        fs.writeFileSync(noJekyllPath, '');
+      }
     },
   };
 }
@@ -45,17 +68,22 @@ function ensureBuildOutDir() {
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const blogPrerenderRoutes = command === 'build' ? getBlogRoutes() : [];
+  const base = normalizeBasePath(process.env.VITE_BASE_PATH);
+  const siteUrl = (
+    process.env.VITE_SITE_URL ?? 'https://atoms.template.com'
+  ).replace(/\/+$/, '');
 
   return {
+    base,
     plugins: [
       viteSourceLocator({
         prefix: 'mgx', // Prefix used to identify source locations; do not change.
       }),
       react(),
       atoms(),
-      ensureBuildOutDir(),
+      ensureBuildArtifacts(),
       Sitemap({
-        hostname: 'https://atoms.template.com',
+        hostname: siteUrl,
         lastmod: getSitemapLastmod(),
         readable: true,
         generateRobotsTxt: true,
