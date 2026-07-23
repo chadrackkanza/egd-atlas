@@ -1,5 +1,6 @@
 import { FileText, Image, ImageIcon, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const exportFormats = [
   { icon: FileText, label: 'PDF', desc: 'Document imprimable' },
@@ -7,7 +8,22 @@ const exportFormats = [
   { icon: ImageIcon, label: 'JPG', desc: 'Image compressée' },
 ];
 
-export function ExportPanel() {
+interface ExportPanelProps {
+  onExport?: (format: string) => Promise<void> | void;
+}
+
+export function ExportPanel({ onExport }: ExportPanelProps) {
+  const { toast } = useToast();
+
+  const handleExport = async (format: string) => {
+    try {
+      if (onExport) await onExport(format);
+      toast({ title: `Export ${format}`, description: 'Export lancé', duration: 3000 });
+    } catch (e) {
+      toast({ title: 'Erreur', description: 'Échec de l\'export', duration: 3000 });
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
@@ -23,6 +39,7 @@ export function ExportPanel() {
         {exportFormats.map((format) => (
           <button
             key={format.label}
+            onClick={() => handleExport(format.label)}
             className="flex w-full items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">

@@ -1,12 +1,16 @@
 import { Bell, HelpCircle, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface HeaderProps {
   children?: React.ReactNode;
 }
 
 export function Header({ children }: HeaderProps) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   return (
     <header className="flex h-14 items-center justify-between border-b bg-card px-4 lg:px-6">
       <div className="flex items-center gap-3">
@@ -26,15 +30,28 @@ export function Header({ children }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground"
+          onClick={() => navigate('/help')}
+        >
           <HelpCircle className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground relative"
+          onClick={() => toast({ title: 'Notifications', description: 'Aucune notification', duration: 2000 })}
+        >
           <Bell className="h-4 w-4" />
           <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-emerald-500" />
         </Button>
         <div className="hidden sm:flex items-center gap-2 ml-2 pl-2 border-l">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted cursor-pointer"
+            onClick={() => navigate('/settings')}
+          >
             <User className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="hidden md:block">

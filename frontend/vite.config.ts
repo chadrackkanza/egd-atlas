@@ -82,7 +82,10 @@ export default defineConfig(({ command }) => {
           changeOrigin: true,
         },
       },
-      watch: { usePolling: true, interval: 600 },
+      hmr: {
+        overlay: true,
+      },
+      watch: { usePolling: true, interval: 100 },
     },
     build: {
       rollupOptions: {

@@ -12,6 +12,7 @@ import {
   Crown,
   HelpCircle,
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Tableau de bord', path: '/' },
@@ -21,13 +22,14 @@ const navItems = [
   { icon: Database, label: 'Données', path: '/data' },
   { icon: BarChart3, label: 'Analyses', path: '/analytics' },
   { icon: Download, label: 'Mes exports', path: '/exports' },
-  { icon: Clock, label: 'Historique', path: '/exports' },
+  { icon: Clock, label: 'Historique', path: '/history' },
   { icon: Settings, label: 'Paramètres', path: '/settings' },
 ];
 
 export function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
   return (
     <aside className="flex h-full w-60 flex-col bg-[hsl(220,40%,16%)] text-white">
@@ -83,14 +85,17 @@ export function Sidebar() {
         <p className="text-[11px] text-white/60 mb-3">
           Accédez à plus de données, d'analyses et d'exports HD.
         </p>
-        <button className="w-full rounded-lg bg-emerald-500 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition-colors">
+        <button
+          onClick={() => navigate('/settings')}
+          className="w-full rounded-lg bg-emerald-500 py-2 text-xs font-semibold text-white hover:bg-emerald-600 transition-colors"
+        >
           Voir les offres
         </button>
       </div>
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-white/10">
-        <p className="text-[10px] text-white/40">© 2026 ECOGEODATA SARL-U</p>
+        <p className="text-[10px] text-white/40">© 2026 ECOGEODATA SARLU</p>
       </div>
     </aside>
   );

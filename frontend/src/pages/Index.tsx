@@ -8,6 +8,9 @@ import { MapView } from '@/components/atlas/MapView';
 import { MapTools } from '@/components/atlas/MapTools';
 import { ExportPanel } from '@/components/atlas/ExportPanel';
 import { StatsPanel } from '@/components/atlas/StatsPanel';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchStats, requestExport } from '@/lib/backend';
+import { useToast } from '@/hooks/use-toast';
 import { MobileNav } from '@/components/atlas/MobileNav';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
@@ -47,6 +50,24 @@ export default function Index() {
   });
   const [mobileTab, setMobileTab] = useState<'carte' | 'couches' | 'exporter'>('carte');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const { data: stats } = useQuery({ queryKey: ['stats', zone], queryFn: () => fetchStats(), staleTime: 1000 * 30 });
+
+  const resetToDefaults = () => {
+    setZone({ province: 'Kinshasa', territoire: 'Kintambo', quartier: 'Joli-Parc' });
+    setSelectedTheme('education');
+    setLayers({
+      ecoles: true,
+      centresSante: true,
+      pointsEau: true,
+      routesPrincipales: false,
+      limitesQuartiers: true,
+      paroisses: false,
+    });
+    toast({ title: 'Réinitialisé', description: 'Paramètres remis par défaut' });
+  };
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
@@ -109,15 +130,24 @@ export default function Index() {
             </div>
 
             {/* Map Tools */}
-            <MapTools />
+            <MapTools onReset={resetToDefaults} />
           </div>
 
           {/* Right Panel - Export & Stats */}
           <div className={`w-full lg:w-72 xl:w-80 overflow-y-auto border-l bg-card p-4 space-y-5 ${
             mobileTab !== 'exporter' ? 'hidden lg:block' : ''
           }`}>
-            <ExportPanel />
-            <StatsPanel zone={zone} />
+            <ExportPanel
+              onExport={async (format) => {
+                try {
+                  await requestExport({ format, zone, layers, theme: selectedTheme });
+                  queryClient.invalidateQueries({ queryKey: ['exports'] });
+                } catch (e) {
+                  toast({ title: 'Erreur', description: 'Impossible de lancer l\'export' });
+                }
+              }}
+            />
+            <StatsPanel zone={zone} stats={stats} />
           </div>
         </div>
 

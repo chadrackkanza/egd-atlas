@@ -3,12 +3,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "mock:server": "node server/index.mjs",
+    "dev:all": "node server/dev-runner.mjs",
     "build": "vite build",
     "lint": "eslint --quiet ./src",
     "preview": "vite preview",
     "postinstall": "echo 'Dependencies installed successfully'"
   },
   "dependencies": {
+    "fastify": "^4.22.0",
+    "@fastify/cors": "^9.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@metagptx/vite-plugin-source-locator": "latest",
     "@metagptx/web-sdk": "latest",

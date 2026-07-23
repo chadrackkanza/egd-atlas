@@ -8,6 +8,7 @@ import AtlasModels from './pages/AtlasModels';
 import DataCatalog from './pages/DataCatalog';
 import Analytics from './pages/Analytics';
 import MyExports from './pages/MyExports';
+import History from './pages/History';
 import ProfileSettings from './pages/ProfileSettings';
 import HelpCenter from './pages/HelpCenter';
 import AuthCallback from './pages/AuthCallback';
@@ -23,6 +24,7 @@ const AppRoutes = () => (
     <Route path="/data" element={<DataCatalog />} />
     <Route path="/analytics" element={<Analytics />} />
     <Route path="/exports" element={<MyExports />} />
+    <Route path="/history" element={<History />} />
     <Route path="/settings" element={<ProfileSettings />} />
     <Route path="/help" element={<HelpCenter />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
@@ -30,16 +32,19 @@ const AppRoutes = () => (
   </Routes>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('Rendering App component');
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
 export { AppRoutes };

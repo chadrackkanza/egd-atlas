@@ -8,6 +8,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "types": ["node"],
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,

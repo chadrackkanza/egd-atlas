@@ -3,17 +3,24 @@ import type { ZoneSelection } from '@/pages/Index';
 
 interface StatsPanelProps {
   zone: ZoneSelection;
+  stats?: {
+    ecoles?: number;
+    centresSante?: number;
+    pointsEau?: number;
+    population?: string;
+    superficie?: string;
+  };
 }
 
-const stats = [
-  { icon: GraduationCap, label: 'Écoles', value: '45', color: 'text-blue-500', bg: 'bg-blue-50' },
-  { icon: Heart, label: 'Centres de santé', value: '12', color: 'text-red-500', bg: 'bg-red-50' },
-  { icon: Droplets, label: "Points d'eau", value: '38', color: 'text-cyan-500', bg: 'bg-cyan-50' },
-  { icon: Users, label: 'Population estimée', value: '125 430', color: 'text-amber-500', bg: 'bg-amber-50' },
-  { icon: Maximize, label: 'Superficie', value: '8,45 km²', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-];
+export function StatsPanel({ zone, stats }: StatsPanelProps) {
+  const displayed = [
+    { icon: GraduationCap, label: 'Écoles', value: stats?.ecoles ?? 0, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { icon: Heart, label: 'Centres de santé', value: stats?.centresSante ?? 0, color: 'text-red-500', bg: 'bg-red-50' },
+    { icon: Droplets, label: "Points d'eau", value: stats?.pointsEau ?? 0, color: 'text-cyan-500', bg: 'bg-cyan-50' },
+    { icon: Users, label: 'Population estimée', value: stats?.population ?? '0', color: 'text-amber-500', bg: 'bg-amber-50' },
+    { icon: Maximize, label: 'Superficie', value: stats?.superficie ?? '0 km²', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+  ];
 
-export function StatsPanel({ zone }: StatsPanelProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -24,7 +31,7 @@ export function StatsPanel({ zone }: StatsPanelProps) {
       </div>
 
       <div className="space-y-2">
-        {stats.map((stat) => (
+        {displayed.map((stat) => (
           <div
             key={stat.label}
             className="flex items-center gap-3 rounded-lg border p-3"
