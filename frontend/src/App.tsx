@@ -15,6 +15,10 @@ import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
 
 const queryClient = new QueryClient();
+const routerBasename =
+  import.meta.env.BASE_URL === '/'
+    ? undefined
+    : import.meta.env.BASE_URL.replace(/\/$/, '');
 
 const AppRoutes = () => (
   <Routes>

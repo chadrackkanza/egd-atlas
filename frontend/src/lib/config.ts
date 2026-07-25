@@ -14,8 +14,10 @@ const defaultConfig = {
 // Fonction de chargement de la configuration d’exécution.
 export async function loadRuntimeConfig(): Promise<void> {
   const runtimeConfigEnabled =
-    import.meta.env.PROD ||
-    import.meta.env.VITE_RUNTIME_CONFIG_ENABLED === 'true';
+    import.meta.env.VITE_RUNTIME_CONFIG_ENABLED === 'true' ||
+    (import.meta.env.PROD &&
+      import.meta.env.VITE_RUNTIME_CONFIG_ENABLED !== 'false' &&
+      !import.meta.env.VITE_API_BASE_URL);
 
   if (!runtimeConfigEnabled) {
     console.log(
