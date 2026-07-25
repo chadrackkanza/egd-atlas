@@ -17,9 +17,9 @@ function run(cmd, args, name) {
   return proc;
 }
 
-// Start mock server and vite dev
+// Start mock server and Vite dev server
 const mock = run('npm', ['run', 'mock:server'], 'mock:server');
-const vite = run('npm', ['run', 'dev'], 'vite');
+const vite = run('npm', ['run', 'dev:vite'], 'vite');
 
 // Forward SIGINT/SIGTERM to children
 ['SIGINT', 'SIGTERM'].forEach(sig => {

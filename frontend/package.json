@@ -2,7 +2,8 @@
   "name": "shadcnui",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node server/dev-runner.mjs",
+    "dev:vite": "vite",
     "mock:server": "node server/index.mjs",
     "dev:all": "node server/dev-runner.mjs",
     "build": "vite build",
