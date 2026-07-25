@@ -27,7 +27,7 @@ const pieData = [
 export default function Analytics() {
   return (
     <PageLayout title="Analyses" subtitle="Statistiques et indicateurs pour la zone sélectionnée">
-      {/* Filters */}
+      {/* Filtres */}
       <div className="flex flex-wrap items-center gap-3 mb-6 p-4 rounded-xl border bg-card">
         <span className="text-xs font-medium text-muted-foreground">Statistiques –</span>
         <span className="text-xs font-semibold">Centres de santé</span>
@@ -52,7 +52,7 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Cartes KPI */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {kpiCards.map((kpi) => (
           <div key={kpi.label} className="rounded-xl border bg-card p-4">
@@ -67,9 +67,9 @@ export default function Analytics() {
         ))}
       </div>
 
-      {/* Charts */}
+      {/* Graphiques */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Bar Chart */}
+        {/* Graphique en barres */}
         <div className="rounded-xl border bg-card p-5">
           <h3 className="text-sm font-semibold mb-4">Centres de santé par quartier</h3>
           <div className="space-y-3">
@@ -89,7 +89,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Pie Chart */}
+        {/* Graphique en secteurs */}
         <div className="rounded-xl border bg-card p-5">
           <h3 className="text-sm font-semibold mb-4">Catégorie</h3>
           <div className="flex items-center justify-center mb-4">

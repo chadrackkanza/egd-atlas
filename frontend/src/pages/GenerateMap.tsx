@@ -56,7 +56,7 @@ export default function GenerateMap() {
 
   return (
     <PageLayout title="Générer une carte" subtitle="Créez une carte personnalisée en 4 étapes">
-      {/* Steps indicator */}
+      {/* Indicateur d’étapes */}
       <div className="flex items-center justify-center gap-2 mb-8">
         {steps.map((step, idx) => (
           <div key={step.id} className="flex items-center">
@@ -80,7 +80,7 @@ export default function GenerateMap() {
         ))}
       </div>
 
-      {/* Step Content */}
+      {/* Contenu de l’étape */}
       <div className="max-w-2xl mx-auto bg-card rounded-xl border p-6">
         {currentStep === 1 && (
           <div className="space-y-4">
@@ -219,7 +219,7 @@ export default function GenerateMap() {
           </div>
         )}
 
-        {/* Navigation Buttons */}
+        {/* Boutons de navigation */}
         <div className="flex justify-between mt-6 pt-4 border-t">
           <Button
             variant="outline"

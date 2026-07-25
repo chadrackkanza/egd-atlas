@@ -3,11 +3,11 @@ import App from './App.tsx';
 import './index.css';
 import { loadRuntimeConfig } from './lib/config.ts';
 
-// Load runtime configuration before rendering the app
+// Chargement de la configuration d’exécution avant le rendu de l’application.
 async function initializeApp() {
-  // Prerendered blog pages are served as pure static HTML for SEO.
-  // Intentionally skip React mounting so the crawler-facing markup stays
-  // lightweight and self-contained — no client-side hydration needed.
+  // Les pages de blog pré-rendues sont servies en HTML statique pour le SEO.
+  // On évite intentionnellement le montage React afin de conserver un rendu
+  // léger et autonome pour les robots d’indexation, sans hydratation côté client.
   if (
     document
       .querySelector('meta[name="prerender-static-page"]')
@@ -18,26 +18,26 @@ async function initializeApp() {
 
   try {
     await loadRuntimeConfig();
-    console.log('Runtime configuration loaded successfully');
+    console.log('Configuration d’exécution chargée avec succès');
   } catch (error) {
     console.warn(
-      'Failed to load runtime configuration, using defaults:',
+      'Échec du chargement de la configuration d’exécution, utilisation des valeurs par défaut :',
       error
     );
   }
 
-  console.log('Mounting React app...');
-  // Render the app
+  console.log('Montage de l’application React...');
+  // Rendu de l’application.
   try {
     createRoot(document.getElementById('root')!).render(<App />);
-    // notify server that mount was attempted
+    // Notifie le serveur qu’une tentative de montage a été effectuée.
     fetch('/api/client-log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event: 'mount', message: 'React mount attempted' }),
     }).catch(() => {});
   } catch (err) {
-    // report error to backend for diagnostics
+    // Signale l’erreur au backend à des fins de diagnostic.
     fetch('/api/client-log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,7 +46,7 @@ async function initializeApp() {
     throw err;
   }
 
-  // Global handlers to forward errors
+  // Gestionnaires globaux pour transmettre les erreurs au backend.
   window.addEventListener('error', (e) => {
     try {
       fetch('/api/client-log', {
@@ -68,5 +68,5 @@ async function initializeApp() {
   });
 }
 
-// Initialize the app
+// Initialisation de l’application.
 initializeApp();

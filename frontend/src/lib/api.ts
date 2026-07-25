@@ -1,4 +1,4 @@
 import { createClient } from '@metagptx/web-sdk';
 
-// Create client instance
+// Instance du client créée ici.
 export const client = createClient();

@@ -1,65 +1,172 @@
-# Shadcn-UI Template Usage Instructions
+# Documentation du projet EGAtlas
 
-## technology stack
+## Présentation
 
-This project is built with:
+EGD Atlas est une application web moderne développée avec React, TypeScript et Vite. Elle permet de visualiser et d’explorer une carte thématique autour de différentes données géographiques, avec des fonctionnalités de sélection de zone, de gestion des couches, d’export et de consultation de statistiques.
 
-- Vite
+Le projet est organisé comme une interface frontale complète, avec un serveur mock API local pour faciliter le développement sans dépendre immédiatement d’un backend externe.
+
+## Stack technique
+
+- React 18
 - TypeScript
-- React
-- shadcn-ui
+- Vite 5
+- React Router DOM
 - Tailwind CSS
+- shadcn/ui
+- React Query
+- Leaflet / React Leaflet
+- Fastify (serveur mock API)
 
-All shadcn/ui components have been downloaded under `@/components/ui`.
+## Prérequis
 
-## File Structure
+Avant de lancer le projet, assurez-vous d’avoir installé :
 
-- `index.html` - HTML entry point
-- `vite.config.ts` - Vite configuration file
-- `tailwind.config.ts` - Tailwind CSS configuration file
-- `package.json` - NPM dependencies and scripts
-- `src/main.tsx` - Project entry point
-- `src/App.tsx` - Router shell (imports pages and sets up routes)
-- `src/pages/Index.tsx` - Main page entry point for `/` by default; replace the placeholder page here unless you explicitly reroute `/` elsewhere
-- `src/index.css` - Existing CSS configuration
+- Node.js 18 ou supérieur
+- npm ou pnpm
 
-## Components
+## Installation
 
-- All shadcn/ui components are pre-downloaded and available at `@/components/ui`
+Depuis le dossier du frontend :
 
-## Styling
-
-- Add global styles to `src/index.css` or create new CSS files as needed
-- Use Tailwind classes for styling components
-
-## Development
-
-- Import components from `@/components/ui` in your React components
-- Customize the UI by modifying the Tailwind configuration
-- Do not stop after editing isolated components or only `src/App.tsx`. The default template homepage lives in `src/pages/Index.tsx`, and leaving `Welcome to Atoms` there means the app is still unfinished.
-- Completion check: either replace `src/pages/Index.tsx` with your real homepage, or update the `/` route in `src/App.tsx` so the live homepage no longer renders the default placeholder page.
-
-## Note
-
-- The `@/` path alias points to the `src/` directory
-- Do NOT modify the title, description, and logo in `index.html` — they are managed by the overview system via `data-mgx-overview` markers.
-
-# Commands
-
-**Install Dependencies**
-
-```shell
-pnpm i
+```bash
+cd frontend
+npm install
 ```
 
-**Start Preview**
+Si vous préférez pnpm :
 
-```shell
-pnpm run dev
+```bash
+cd frontend
+pnpm install
 ```
 
-**To build**
+## Démarrage du projet
 
-```shell
-pnpm run build
+### Mode développement
+
+```bash
+npm run dev
 ```
+
+Cette commande lance automatiquement :
+
+- le serveur mock API sur http://localhost:8000
+- le serveur Vite sur http://localhost:3000
+
+Vous pouvez ensuite ouvrir :
+
+```text
+http://localhost:3000
+```
+
+## Scripts disponibles
+
+- `npm run dev` : démarre le workflow complet de développement (mock API + Vite)
+- `npm run dev:vite` : démarre uniquement Vite
+- `npm run mock:server` : démarre uniquement le serveur mock API
+- `npm run build` : construit l’application pour la production
+- `npm run preview` : prévisualise la version buildée
+- `npm run lint` : exécute ESLint sur le code source
+
+## Structure du projet
+
+```text
+frontend/
+├── public/                # Fichiers statiques
+├── server/                # Serveur mock API Fastify
+├── src/
+│   ├── components/        # Composants React réutilisables
+│   │   └── atlas/         # Composants spécifiques à l’interface atlas
+│   ├── hooks/             # Hooks personnalisés
+│   ├── lib/               # Logique API, configuration, utilitaires
+│   ├── pages/             # Pages de l’application
+│   ├── App.tsx            # Configuration des routes principales
+│   └── main.tsx           # Point d’entrée React
+├── vite.config.ts         # Configuration Vite et proxy API
+└── package.json           # Dépendances et scripts
+```
+
+## Fonctionnalités principales
+
+- Sélection de zone géographique : province, territoire, quartier
+- Choix de thème cartographique : éducation, santé, eau, etc.
+- Gestion des couches cartographiques
+- Visualisation de carte interactive
+- Panneau d’export de carte
+- Panneau de statistiques
+- Navigation entre les différentes pages de l’application
+- Support d’alertes et de notifications utilisateur
+
+## Architecture frontale
+
+### Routage
+
+Les routes principales sont définies dans [src/App.tsx](src/App.tsx) et couvrent notamment :
+
+- `/` : page d’accueil / atlas principal
+- `/generate` : génération de carte
+- `/atlas` : modèles atlas
+- `/data` : catalogue de données
+- `/analytics` : analyses
+- `/exports` : exports personnels
+- `/history` : historique des actions
+- `/settings` : paramètres utilisateur
+- `/help` : centre d’aide
+
+### Communication API
+
+Les appels API sont centralisés dans [src/lib/backend.ts](src/lib/backend.ts) et utilisent les endpoints `/api/*`.
+
+Le proxy Vite est configuré dans [vite.config.ts](vite.config.ts) pour rediriger les requêtes API vers le backend local sur le port 8000.
+
+### Configuration runtime
+
+La configuration dynamique est gérée dans [src/lib/config.ts](src/lib/config.ts). Elle permet de charger des valeurs de configuration selon l’environnement d’exécution.
+
+## Serveur mock API
+
+Le projet embarque un serveur mock API dans [server/index.mjs](server/index.mjs) afin de permettre un développement local fiable sans dépendre immédiatement d’un backend externe.
+
+Les endpoints disponibles incluent :
+
+- `GET /api/stats`
+- `GET /api/history`
+- `GET /api/exports`
+- `POST /api/exports`
+- `POST /api/client-log`
+
+## Bonnes pratiques de développement
+
+- Conserver la logique métier dans les fichiers du dossier `src/lib`
+- Utiliser les composants du dossier `src/components` pour la UI réutilisable
+- Préférer les hooks personnalisés pour la logique récurrente
+- Garder les appels réseau centralisés dans les modules dédiés
+- Vérifier les erreurs de proxy si les appels `/api/*` échouent en développement
+
+## Dépannage
+
+### Les appels API échouent
+
+Vérifiez que :
+
+1. `npm run dev` est bien lancé
+2. le serveur mock API est bien actif sur le port 8000
+3. aucune autre application n’utilise les ports 3000 ou 8000
+
+### Le site ne s’affiche pas
+
+Vérifiez que :
+
+- les dépendances ont bien été installées
+- le terminal affiche bien les messages de démarrage de Vite
+- le navigateur ouvre l’URL correcte : http://localhost:3000
+
+## Contribution
+
+Pour contribuer au projet :
+
+1. Créer une branche de travail
+2. Appliquer les modifications
+3. Tester localement avec `npm run dev`
+4. Vérifier que le build passe avec `npm run build`

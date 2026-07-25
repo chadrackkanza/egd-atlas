@@ -33,7 +33,7 @@ const AppRoutes = () => (
 );
 
 const App = () => {
-  console.log('Rendering App component');
+  console.log('Rendu du composant App');
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

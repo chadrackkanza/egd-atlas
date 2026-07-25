@@ -31,7 +31,7 @@ export function MapTools({ onReset }: MapToolsProps) {
 
   return (
     <div className="flex items-center justify-between border-t bg-card px-4 py-2.5">
-      {/* Left: Map options */}
+      {/* Gauche : options de carte */}
       <div className="hidden md:flex items-center gap-3">
         <div className="flex items-center gap-2">
           <Map className="h-3.5 w-3.5 text-muted-foreground" />
@@ -49,7 +49,7 @@ export function MapTools({ onReset }: MapToolsProps) {
         </div>
       </div>
 
-      {/* Center: Tools */}
+      {/* Centre : outils */}
       <div className="flex items-center gap-1">
         <span className="text-[10px] font-medium text-muted-foreground mr-2 hidden sm:inline">Outils :</span>
         {tools.map((tool) => (
@@ -66,7 +66,7 @@ export function MapTools({ onReset }: MapToolsProps) {
         ))}
       </div>
 
-      {/* Right: Reset */}
+      {/* Droite : réinitialisation */}
       <Button variant="outline" size="sm" className="h-7 text-[10px] px-2.5" onClick={handleReset}>
         Réinitialiser
       </Button>

@@ -40,7 +40,7 @@ export function Sidebar() {
         </div>
         <div>
           <h1 className="text-sm font-bold leading-tight">EGD Atlas</h1>
-          <p className="text-[10px] text-white/60">Cartographie & Intelligence Territoriale</p>
+          <p className="text-[10px] text-white/60">Cartographie et intelligence territoriale</p>
         </div>
       </div>
 
@@ -76,14 +76,14 @@ export function Sidebar() {
         </button>
       </nav>
 
-      {/* Premium CTA */}
+      {/* CTA premium */}
       <div className="mx-3 mb-4 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Crown className="h-4 w-4 text-emerald-400" />
           <span className="text-xs font-semibold text-emerald-300">Passez en Premium</span>
         </div>
         <p className="text-[11px] text-white/60 mb-3">
-          Accédez à plus de données, d'analyses et d'exports HD.
+          Accédez à davantage de données, d’analyses et d’exports HD.
         </p>
         <button
           onClick={() => navigate('/settings')}
@@ -93,7 +93,7 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Footer */}
+      {/* Pied de page */}
       <div className="px-5 py-3 border-t border-white/10">
         <p className="text-[10px] text-white/40">© 2026 ECOGEODATA SARLU</p>
       </div>

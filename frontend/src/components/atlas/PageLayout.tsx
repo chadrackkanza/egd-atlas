@@ -17,12 +17,12 @@ export function PageLayout({ children, title, subtitle }: PageLayoutProps) {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Desktop Sidebar */}
+      {/* Barre latérale desktop */}
       <div className="hidden lg:flex">
         <Sidebar />
       </div>
 
-      {/* Main Content */}
+      {/* Contenu principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -37,7 +37,7 @@ export function PageLayout({ children, title, subtitle }: PageLayoutProps) {
           </Sheet>
         </Header>
 
-        {/* Page Content */}
+        {/* Contenu de la page */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-6">
           {(title || subtitle) && (
             <div className="mb-6">
@@ -48,7 +48,7 @@ export function PageLayout({ children, title, subtitle }: PageLayoutProps) {
           {children}
         </div>
 
-        {/* Mobile Bottom Nav */}
+        {/* Navigation mobile inférieure */}
         <MobileNav />
       </div>
     </div>

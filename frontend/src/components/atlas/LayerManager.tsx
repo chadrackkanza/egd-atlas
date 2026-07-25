@@ -56,7 +56,7 @@ export function LayerManager({ layers, setLayers }: LayerManagerProps) {
         variant="outline"
         size="sm"
         className="w-full text-xs h-8 gap-1.5"
-        onClick={() => toast({ title: 'Fonctionnalité', description: 'Ajout d\'élément non implémenté.' })}
+        onClick={() => toast({ title: 'Fonctionnalité', description: 'Ajout d’élément non implémenté.' })}
       >
         <Plus className="h-3.5 w-3.5" />
         Ajouter un élément

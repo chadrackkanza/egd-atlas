@@ -17,7 +17,7 @@ export default function ProfileSettings() {
 
   return (
     <PageLayout title="Paramètres du compte" subtitle="Gérez vos informations personnelles et préférences">
-      {/* Tabs */}
+      {/* Onglets */}
       <div className="flex gap-1 mb-6 border-b">
         {tabs.map((tab) => (
           <button
@@ -35,7 +35,7 @@ export default function ProfileSettings() {
         ))}
       </div>
 
-      {/* Content */}
+      {/* Contenu */}
       <div className="max-w-2xl">
         {activeTab === 'profil' && (
           <div className="rounded-xl border bg-card p-6 space-y-6">
@@ -49,7 +49,7 @@ export default function ProfileSettings() {
               </Button>
             </div>
 
-            {/* Form */}
+            {/* Formulaire */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label className="text-xs">Nom complet</Label>

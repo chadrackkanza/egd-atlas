@@ -71,14 +71,14 @@ export default function Index() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Desktop Sidebar */}
+      {/* Barre latérale desktop */}
       <div className="hidden lg:flex">
         <Sidebar />
       </div>
 
-      {/* Main Content */}
+      {/* Contenu principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
+        {/* En-tête */}
         <Header>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
@@ -92,7 +92,7 @@ export default function Index() {
           </Sheet>
         </Header>
 
-        {/* Mobile Tabs */}
+        {/* Onglets mobiles */}
         <div className="flex lg:hidden border-b bg-card">
           {(['carte', 'couches', 'exporter'] as const).map((tab) => (
             <button
@@ -109,9 +109,9 @@ export default function Index() {
           ))}
         </div>
 
-        {/* Content Area */}
+        {/* Zone de contenu */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Left Panel - Configuration */}
+          {/* Panneau gauche - configuration */}
           <div className={`w-full lg:w-80 xl:w-96 overflow-y-auto border-r bg-card p-4 space-y-5 ${
             mobileTab !== 'couches' ? 'hidden lg:block' : ''
           }`}>
@@ -120,20 +120,20 @@ export default function Index() {
             <LayerManager layers={layers} setLayers={setLayers} />
           </div>
 
-          {/* Map + Tools Area */}
+          {/* Zone carte + outils */}
           <div className={`flex-1 flex flex-col overflow-hidden ${
             mobileTab !== 'carte' ? 'hidden lg:flex' : 'flex'
           }`}>
-            {/* Map */}
+            {/* Carte */}
             <div className="flex-1 relative">
               <MapView zone={zone} layers={layers} selectedTheme={selectedTheme} />
             </div>
 
-            {/* Map Tools */}
+            {/* Outils de carte */}
             <MapTools onReset={resetToDefaults} />
           </div>
 
-          {/* Right Panel - Export & Stats */}
+          {/* Panneau droit - export et statistiques */}
           <div className={`w-full lg:w-72 xl:w-80 overflow-y-auto border-l bg-card p-4 space-y-5 ${
             mobileTab !== 'exporter' ? 'hidden lg:block' : ''
           }`}>
@@ -151,7 +151,7 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Mobile Bottom Nav */}
+        {/* Navigation mobile inférieure */}
         <MobileNav />
       </div>
     </div>

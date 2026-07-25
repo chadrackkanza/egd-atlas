@@ -10,7 +10,7 @@ interface MapViewProps {
   selectedTheme: ThemeType;
 }
 
-// Fix default marker icon
+// Correction de l’icône par défaut du marqueur.
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -27,7 +27,7 @@ function createIcon(color: string) {
   });
 }
 
-// Sample data points for Kintambo area
+// Exemples de points de données pour la zone de Kintambo.
 const samplePoints = {
   ecoles: [
     { lat: -4.327, lng: 15.285, name: 'École Primaire Kintambo' },
@@ -105,7 +105,7 @@ export function MapView({ zone, layers, selectedTheme }: MapViewProps) {
         <MapContent layers={layers} />
       </MapContainer>
 
-      {/* Legend overlay */}
+      {/* Superposition de la légende */}
       <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
         <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Légende</h4>
         <div className="space-y-1.5">
@@ -148,7 +148,7 @@ export function MapView({ zone, layers, selectedTheme }: MapViewProps) {
         </div>
       </div>
 
-      {/* Scale bar */}
+      {/* Barre d’échelle */}
       <div className="absolute bottom-4 right-4 z-[1000] bg-white/90 rounded px-2 py-1">
         <span className="text-[9px] text-muted-foreground">500 m</span>
       </div>

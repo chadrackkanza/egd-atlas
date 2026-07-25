@@ -18,7 +18,7 @@ export function Header({ children }: HeaderProps) {
         <div className="hidden sm:block">
           <h2 className="text-sm font-semibold text-foreground">Tableau de bord</h2>
           <p className="text-[11px] text-muted-foreground">
-            Plateforme de cartographie et génération d'atlas territoriaux en RDC
+            Plateforme de cartographie et de génération d’atlas territoriaux en RDC
           </p>
         </div>
         <div className="sm:hidden flex items-center gap-2">

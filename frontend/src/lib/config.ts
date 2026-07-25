@@ -1,17 +1,17 @@
-// Runtime configuration
+// Configuration d’exécution.
 let runtimeConfig: {
   API_BASE_URL: string;
 } | null = null;
 
-// Configuration loading state
+// État du chargement de la configuration.
 let configLoading = true;
 
-// Default fallback configuration
+// Configuration de secours par défaut.
 const defaultConfig = {
-  API_BASE_URL: 'http://127.0.0.1:8000', // Only used if runtime config fails to load
+  API_BASE_URL: 'http://127.0.0.1:8000', // Utilisée uniquement si le chargement de configuration échoue.
 };
 
-// Function to load runtime configuration
+// Fonction de chargement de la configuration d’exécution.
 export async function loadRuntimeConfig(): Promise<void> {
   const runtimeConfigEnabled =
     import.meta.env.PROD ||
@@ -19,83 +19,83 @@ export async function loadRuntimeConfig(): Promise<void> {
 
   if (!runtimeConfigEnabled) {
     console.log(
-      'Skipping runtime config fetch in local development; using Vite env/default config.'
+      'Chargement de la configuration d’exécution ignoré en développement local ; utilisation de la configuration Vite ou des valeurs par défaut.'
     );
     configLoading = false;
     return;
   }
 
   try {
-    console.log('🔧 DEBUG: Starting to load runtime config...');
-    // Try to load configuration from a config endpoint
+    console.log('🔧 DEBUG : démarrage du chargement de la configuration d’exécution...');
+    // Tentative de chargement de la configuration depuis un endpoint dédié.
     const response = await fetch('/api/config');
     if (response.ok) {
       const contentType = response.headers.get('content-type');
-      // Only parse as JSON if the response is actually JSON
+      // On ne parse le JSON que si la réponse est réellement au format JSON.
       if (contentType && contentType.includes('application/json')) {
         runtimeConfig = await response.json();
-        console.log('Runtime config loaded successfully');
+        console.log('Configuration d’exécution chargée avec succès');
       } else {
         console.log(
-          'Config endpoint returned non-JSON response, skipping runtime config'
+          'Le point d’accès de configuration a renvoyé une réponse non JSON ; chargement de la configuration d’exécution ignoré'
         );
       }
     } else {
       console.log(
-        '🔧 DEBUG: Config fetch failed with status:',
+        '🔧 DEBUG : échec du chargement de la configuration avec le statut :',
         response.status
       );
     }
   } catch (error) {
-    console.log('Failed to load runtime config, using defaults:', error);
+    console.log('Échec du chargement de la configuration d’exécution, utilisation des valeurs par défaut :', error);
   } finally {
     configLoading = false;
     console.log(
-      '🔧 DEBUG: Config loading finished, configLoading set to false'
+      '🔧 DEBUG : chargement de la configuration terminé, configLoading défini à false'
     );
   }
 }
 
-// Get current configuration
+// Récupération de la configuration actuelle.
 export function getConfig() {
-  // If config is still loading, return default config to avoid using stale Vite env vars
+  // Si la configuration est encore en cours de chargement, on retourne la configuration par défaut pour éviter d’utiliser des variables Vite obsolètes.
   if (configLoading) {
-    console.log('Config still loading, using default config');
+    console.log('Configuration encore en cours de chargement, utilisation de la configuration par défaut');
     return defaultConfig;
   }
 
-  // First try runtime config (for Lambda)
+  // Essai prioritaire de la configuration d’exécution (pour Lambda).
   if (runtimeConfig) {
-    console.log('Using runtime config');
+    console.log('Utilisation de la configuration d’exécution');
     return runtimeConfig;
   }
 
-  // Then try Vite environment variables (for local development)
+  // Puis tentative d’utilisation des variables d’environnement Vite (développement local).
   if (import.meta.env.VITE_API_BASE_URL) {
     const viteConfig = {
       API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
     };
-    console.log('Using Vite environment config');
+    console.log('Utilisation de la configuration fournie par l’environnement Vite');
     return viteConfig;
   }
 
-  // Finally fall back to default
-  console.log('Using default config');
+  // Enfin, retour à la configuration par défaut.
+  console.log('Utilisation de la configuration par défaut');
   return defaultConfig;
 }
 
-// Dynamic API_BASE_URL getter - this will always return the current config
+// Getter dynamique de API_BASE_URL : il renvoie toujours la configuration actuelle.
 export function getAPIBaseURL(): string {
   const baseURL = getConfig().API_BASE_URL;
-  // If the base URL is just '/', return empty string to avoid double slashes and incorrect http:// prefix
+  // Si l’URL de base vaut '/', on retourne une chaîne vide pour éviter les doubles slashs et un préfixe http:// incorrect.
   if (baseURL === '/') {
     return '';
   }
   return baseURL;
 }
 
-// For backward compatibility, but this should be avoided
-// Removed static export to prevent using stale config values
+// Conservé pour compatibilité ascendante, mais à éviter si possible.
+// Export statique retiré pour éviter des valeurs de configuration obsolètes.
 // export const API_BASE_URL = getAPIBaseURL();
 
 export const config = {

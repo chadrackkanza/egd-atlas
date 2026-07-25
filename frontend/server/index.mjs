@@ -5,7 +5,7 @@ const fastify = Fastify({ logger: true });
 
 await fastify.register(cors, { origin: true });
 
-// In-memory mock data
+// Données mock stockées en mémoire.
 let exportsData = [
   { id: 1, title: 'Carte Santé Kintambo', zone: 'Kintambo', format: 'PDF', date: '2026-06-20' },
   { id: 2, title: 'Carte Éducation Kinshasa', zone: 'Kinshasa', format: 'PDF', date: '2026-06-18' },
@@ -28,7 +28,7 @@ fastify.get('/api/stats', async (request, reply) => {
   return stats;
 });
 
-// Redirect root to the frontend dev server so visiting backend root is helpful
+// Redirige la racine vers le serveur de développement frontend pour rendre la visite de la racine du backend utile.
 fastify.get('/', async (request, reply) => {
   const frontendPort = process.env.FRONTEND_PORT || 3000;
   const target = `http://localhost:${frontendPort}/`;
@@ -67,4 +67,4 @@ fastify.post('/api/client-log', async (request, reply) => {
 
 const port = Number(process.env.BACKEND_PORT || 8000);
 await fastify.listen({ port, host: '0.0.0.0' });
-console.log(`Mock API server listening on http://localhost:${port}`);
+console.log(`Serveur API mock prêt sur http://localhost:${port}`);

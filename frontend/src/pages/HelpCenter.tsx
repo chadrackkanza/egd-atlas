@@ -22,7 +22,7 @@ const articles = [
 export default function HelpCenter() {
   return (
     <PageLayout title="Centre d'aide" subtitle="Trouvez des réponses à vos questions">
-      {/* Search */}
+      {/* Recherche */}
       <div className="max-w-xl mx-auto mb-8">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -33,7 +33,7 @@ export default function HelpCenter() {
         </div>
       </div>
 
-      {/* Quick Guides */}
+      {/* Guides rapides */}
       <div className="mb-8">
         <h2 className="text-sm font-semibold mb-4">Guides rapides</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -51,7 +51,7 @@ export default function HelpCenter() {
         </div>
       </div>
 
-      {/* Popular Articles */}
+      {/* Articles populaires */}
       <div className="mb-8">
         <h2 className="text-sm font-semibold mb-4">Articles populaires</h2>
         <div className="rounded-xl border bg-card divide-y">
@@ -67,7 +67,7 @@ export default function HelpCenter() {
         </div>
       </div>
 
-      {/* Contact Support */}
+      {/* Contactez le support */}
       <div className="rounded-xl border bg-card p-6 text-center max-w-md mx-auto">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 mx-auto mb-3">
           <MessageCircle className="h-6 w-6 text-emerald-600" />

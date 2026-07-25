@@ -29,7 +29,7 @@ const themeColors: Record<string, string> = {
 export default function DataCatalog() {
   return (
     <PageLayout title="Données" subtitle="Catalogue de données géographiques disponibles">
-      {/* Search & Filter */}
+      {/* Recherche et filtres */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -41,7 +41,7 @@ export default function DataCatalog() {
         </Button>
       </div>
 
-      {/* Table */}
+      {/* Tableau */}
       <div className="rounded-xl border bg-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">

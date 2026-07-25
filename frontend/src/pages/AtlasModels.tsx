@@ -77,7 +77,7 @@ export default function AtlasModels() {
           </div>
         ))}
 
-        {/* Create custom */}
+        {/* Créer un modèle personnalisé */}
         <div className="rounded-xl border-2 border-dashed border-muted-foreground/20 p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-50/50 transition-all">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted mb-4">
             <Plus className="h-6 w-6 text-muted-foreground" />
