@@ -14,17 +14,17 @@ build:
     - npm ci
     - npm run build
   artifacts:
+    expire_in: 1 hour
     paths:
       - dist/
 
 pages:
   stage: deploy
-  dependencies:
+  needs:
     - build
   script:
     - mkdir -p public
     - cp -r dist/. public/
-    - cp -r public/. public/
   artifacts:
     paths:
       - public
