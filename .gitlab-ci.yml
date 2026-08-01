@@ -1,0 +1,29 @@
+image: node:20
+
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+pages:
+  stage: deploy
+  script:
+    - echo "Deploying static site to GitLab Pages"
+  artifacts:
+    paths:
+      - public/
+      - dist/
+  only:
+    - master
