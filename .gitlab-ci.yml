@@ -19,11 +19,14 @@ build:
 
 pages:
   stage: deploy
+  dependencies:
+    - build
   script:
-    - echo "Deploying static site to GitLab Pages"
+    - mkdir -p public
+    - cp -r dist/. public/
+    - cp -r public/. public/
   artifacts:
     paths:
-      - public/
-      - dist/
+      - public
   only:
     - master

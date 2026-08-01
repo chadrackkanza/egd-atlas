@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://egdatlas.local/</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/recherche</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/recherche</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/atlas</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/atlas</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/donnees</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/donnees</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/analyses</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/analyses</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/generer-carte</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/generer-carte</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/mes-exports</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/mes-exports</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/historique</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/historique</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://egdatlas.local/aide</loc>
+    <loc>https://ecogeodata1.gitlab.io/egd-atlas/aide</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
