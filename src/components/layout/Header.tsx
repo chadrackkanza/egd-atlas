@@ -1,5 +1,5 @@
 import type { ViewId } from '../../types'
-import { LuBell, LuCircleHelp, LuCircleUserRound } from 'react-icons/lu'
+import { LuBell, LuCircleHelp } from 'react-icons/lu'
 
 interface HeaderProps {
   currentView: ViewId

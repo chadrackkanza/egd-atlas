@@ -14,6 +14,7 @@ interface NavItem {
 
 const iconClass = 'w-5 h-5 flex-shrink-0'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const NAV_ITEMS: NavItem[] = [
   { id: 'tableau-de-bord', label: 'Tableau de bord', icon: <LuLayoutDashboard className={iconClass} /> },
   {

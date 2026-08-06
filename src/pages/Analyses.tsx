@@ -151,7 +151,12 @@ export function Analyses() {
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }} formatter={(v: number) => [`${v}%`, '']} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }} 
+                  formatter={(value) => {
+                    const numericValue = Number(value ?? 0)
+                    return [`${numericValue}%`, '']
+                  }}
+                />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
