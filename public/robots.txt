@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ecogeodata1.gitlab.io/egd-atlas/sitemap.xml

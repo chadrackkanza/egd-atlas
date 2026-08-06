@@ -1,0 +1,32 @@
+image: node:20
+
+stages:
+  - build
+  - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+build:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - dist/
+
+pages:
+  stage: deploy
+  needs:
+    - build
+  script:
+    - mkdir -p public
+    - cp -r dist/. public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
