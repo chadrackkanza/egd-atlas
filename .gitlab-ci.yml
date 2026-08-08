@@ -1,32 +1,10 @@
-image: node:20
-
-stages:
-  - build
-  - deploy
-
-cache:
-  paths:
-    - node_modules/
-
-build:
-  stage: build
-  script:
-    - npm ci
-    - npm run build
-  artifacts:
-    expire_in: 1 hour
-    paths:
-      - dist/
-
-pages:
-  stage: deploy
-  needs:
-    - build
-  script:
-    - mkdir -p public
-    - cp -r dist/. public/
-  artifacts:
-    paths:
-      - public
-  only:
-    - master
+# The Docker image that will be used to build your app
+image: node:lts
+create-pages:
+  pages:
+    # The folder that contains the files to be exposed at the Page URL
+    publish: dist
+  rules:
+    # This ensures that only pushes to the default branch will trigger
+    # a pages deploy
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
