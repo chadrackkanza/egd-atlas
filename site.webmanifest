@@ -1,0 +1,17 @@
+{
+  "name": "EGD Atlas",
+  "short_name": "EGD Atlas",
+  "description": "Plateforme de cartographie territoriale et d’exports géospatiaux en RDC.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#15803d",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
