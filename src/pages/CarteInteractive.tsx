@@ -1,8 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { MapContainer, TileLayer, Polygon, Marker, Popup, ZoomControl, useMap, Polyline, Circle, Tooltip as LTooltip } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import Map from 'ol/Map'
+import { fromLonLat } from 'ol/proj'
 import type { MapLayer, ViewId } from '../types'
 import {
   ZONES, PROVINCES, COMMUNES_BY_PROVINCE, SECTEURS_BY_COMMUNE,
@@ -11,33 +10,17 @@ import {
   HEALTH_ZONES, HEALTH_AREAS, EDUCATION_ZONES,
 } from '../data/mockData'
 import type { ThematicZone } from '../data/mockData'
+import { OpenLayersMap } from '../components/map/OpenLayersMap'
 import {
   LuSearch, LuLocate, LuGraduationCap, LuHeartPulse, LuDroplet, LuChurch,
   LuBuilding2, LuLeaf, LuUsers, LuShield, LuLayers,
   LuPlus, LuCompass, LuRotateCw, LuMaximize, LuMinus,
   LuCrosshair, LuRuler, LuPenLine, LuPrinter, LuDownload,
-  LuImage, LuFileText, LuEllipsis, LuEye, LuX, LuMapPin, LuFilter, LuMap,
-  LuCheck, LuTrash2, LuChevronRight, LuLock, LuInfo,
+  LuImage, LuFileText, LuEye, LuX, LuMapPin, LuFilter, LuMap,
+  LuCheck, LuTrash2, LuChevronDown, LuChevronRight, LuLock, LuInfo,
 } from 'react-icons/lu'
 import { toaster } from '../components/ui/toaster'
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
-
-function createColoredIcon(color: string, emoji: string, active = false) {
-  const size = active ? 32 : 24
-  const fontSize = active ? 15 : 11
-  return L.divIcon({
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.4);font-size:${fontSize}px;${active ? 'outline:3px solid #15803d;' : ''}">${emoji}</div>`,
-    className: '',
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  })
-}
+import { buildMapExportFilename, exportMapDocument, type ExportLegendItem, type MapExportFormat } from '../lib/mapExport'
 
 const LAYER_META: Record<string, { color: string; emoji: string; label: string }> = {
   ecoles: { color: '#1d4ed8', emoji: '🎓', label: 'Écoles' },
@@ -93,42 +76,6 @@ function haversine(a: [number, number], b: [number, number]): number {
   return 2 * R * Math.asin(Math.sqrt(h))
 }
 
-function MapController({
-  mapRef, action, center, measureMode, onMapClick,
-}: {
-  mapRef: React.MutableRefObject<L.Map | null>
-  action: string
-  center: [number, number]
-  measureMode: boolean
-  onMapClick: (lat: number, lng: number) => void
-}) {
-  const map = useMap()
-  mapRef.current = map
-
-  useEffect(() => {
-    if (action === 'zoom-in') map.zoomIn()
-    if (action === 'zoom-out') map.zoomOut()
-    if (action === 'center') map.setView(center, 14)
-    if (action === 'fullscreen') {
-      if (!document.fullscreenElement) {
-        map.getContainer().requestFullscreen?.()
-      } else {
-        document.exitFullscreen?.()
-      }
-    }
-  }, [action, map, center])
-
-  useEffect(() => {
-    if (measureMode) {
-      const handler = (e: L.LeafletMouseEvent) => onMapClick(e.latlng.lat, e.latlng.lng)
-      map.on('click', handler)
-      return () => { map.off('click', handler) }
-    }
-  }, [measureMode, map, onMapClick])
-
-  return null
-}
-
 function SectionTitle({ title, icon }: { title: string; icon: React.ReactNode }) {
   return (
     <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wide flex items-center gap-1.5 mb-3">
@@ -174,10 +121,12 @@ export function CarteInteractive({ onNavigate }: CarteInteractiveProps) {
   const [mapAction, setMapAction] = useState<string>('')
   const [selectedMarker, setSelectedMarker] = useState<{ label: string; type: string; lat: number; lng: number } | null>(null)
   const [measurePoints, setMeasurePoints] = useState<[number, number][]>([])
-  const [exportFormat, setExportFormat] = useState<string | null>(null)
+  const [exportFormat, setExportFormat] = useState<MapExportFormat | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [exportNotice, setExportNotice] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [quickExportOpen, setQuickExportOpen] = useState(false)
 
-  const mapRef = useRef<L.Map | null>(null)
+  const mapRef = useRef<Map | null>(null)
 
   const currentZone = ZONES.find(z => z.commune === commune) || ZONES[0]
   const communes = COMMUNES_BY_PROVINCE[province] || []
@@ -247,20 +196,248 @@ export function CarteInteractive({ onNavigate }: CarteInteractiveProps) {
     return COMMUNE_BOUNDS[commune]
   }, [delimitation, adminLevel, province, commune, secteur])
 
-  const handleExport = (fmt: string) => {
-    setExportFormat(fmt)
-    setExporting(true)
-    setTimeout(() => {
-      setExporting(false)
-      setExportFormat(null)
+  const mapPolygons = useMemo(() => {
+    const polygons: Array<{
+      id: string
+      positions: [number, number][]
+      color: string
+      fillColor?: string
+      fillOpacity?: number
+      weight?: number
+      dashArray?: string
+    }> = []
+
+    if (delimitation === 'administrative' && activeAdminBounds) {
+      polygons.push({
+        id: 'administrative-bounds',
+        positions: activeAdminBounds,
+        color: '#15803d',
+        fillColor: '#15803d',
+        fillOpacity: 0.08,
+        weight: 2.5,
+        dashArray: '6 4',
+      })
+    }
+
+    if (delimitation === 'thematic') {
+      for (const zone of activeThematicZones) {
+        polygons.push({
+          id: zone.id,
+          positions: zone.bounds,
+          color: zone.color,
+          fillColor: zone.color,
+          fillOpacity: zone.fillOpacity,
+          weight: 2,
+          dashArray: zone.type === 'zone-sante' ? '8 4' : undefined,
+        })
+      }
+
+      polygons.push({
+        id: 'kintambo-reference',
+        positions: KINTAMBO_BOUNDS,
+        color: '#94a3b8',
+        fillColor: '#94a3b8',
+        fillOpacity: 0.03,
+        weight: 1,
+      })
+    }
+
+    return polygons
+  }, [activeAdminBounds, activeThematicZones, delimitation])
+
+  const mapPoints = useMemo(() => [
+    ...allVisibleMarkers.map((marker) => ({
+      id: `${marker.layerId}-${marker.index}`,
+      lat: marker.lat,
+      lng: marker.lng,
+      color: marker.color,
+      emoji: marker.emoji,
+      label: marker.label,
+      active: selectedMarker?.label === marker.label,
+      size: selectedMarker?.label === marker.label ? 32 : 24,
+      payload: {
+        kind: 'marker',
+        label: marker.label,
+        type: marker.layerId,
+        lat: marker.lat,
+        lng: marker.lng,
+      },
+    })),
+    ...measurePoints.map((point, index) => ({
+      id: `measure-${index}`,
+      lat: point[0],
+      lng: point[1],
+      color: '#2563eb',
+      size: 14,
+      payload: { kind: 'measure' },
+    })),
+  ], [allVisibleMarkers, measurePoints, selectedMarker])
+
+  const mapLines = useMemo(() => {
+    if (measurePoints.length < 2) {
+      return []
+    }
+
+    return [{
+      id: 'measure-line',
+      positions: measurePoints,
+      color: '#2563eb',
+      width: 3,
+      dashArray: '8 4',
+    }]
+  }, [measurePoints])
+
+  const handleMapReady = useCallback((map: Map) => {
+    mapRef.current = map
+  }, [])
+
+  const exportLegendItems = useMemo<ExportLegendItem[]>(() => {
+    const items: ExportLegendItem[] = []
+
+    if (delimitation === 'administrative' && activeAdminBounds) {
+      items.push({
+        label: adminLevel === 'province' ? `Limite provinciale: ${province}` : adminLevel === 'commune' ? `Limite communale: ${commune}` : `Limite sectorielle: ${secteur}`,
+        color: '#15803d',
+        variant: 'box',
+      })
+    }
+
+    if (delimitation === 'thematic') {
+      activeThematicZones.slice(0, 6).forEach((zone) => {
+        items.push({
+          label: zone.name,
+          color: zone.color,
+          variant: 'box',
+        })
+      })
+    }
+
+    layers
+      .filter((layer) => layer.checked)
+      .forEach((layer) => {
+        items.push({
+          label: layer.label,
+          color: layer.color,
+          variant: 'dot',
+        })
+      })
+
+    if (measurePoints.length >= 2) {
+      items.push({
+        label: `Trace de mesure (${measureDisplay})`,
+        color: '#2563eb',
+        variant: 'line',
+      })
+    }
+
+    return items
+  }, [
+    activeAdminBounds,
+    activeThematicZones,
+    adminLevel,
+    commune,
+    delimitation,
+    layers,
+    measureDisplay,
+    measurePoints.length,
+    province,
+    secteur,
+  ])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapAction) {
+      return
+    }
+
+    const view = map.getView()
+    const currentZoom = view.getZoom() ?? 14
+
+    if (mapAction === 'zoom-in') {
+      view.animate({ zoom: currentZoom + 1, duration: 250 })
+    }
+    if (mapAction === 'zoom-out') {
+      view.animate({ zoom: currentZoom - 1, duration: 250 })
+    }
+    if (mapAction === 'center') {
+      view.animate({ center: fromLonLat([MAP_CENTER[1], MAP_CENTER[0]]), zoom: 14, duration: 350 })
+    }
+    if (mapAction === 'fullscreen') {
+      const target = map.getTargetElement()
+      if (!document.fullscreenElement) {
+        target?.requestFullscreen?.()
+      } else {
+        document.exitFullscreen?.()
+      }
+    }
+
+    setMapAction('')
+  }, [mapAction])
+
+  const handleExport = useCallback(async (fmt: MapExportFormat) => {
+    const map = mapRef.current
+    if (!map) {
+      toaster.create({
+        title: 'Export indisponible',
+        description: 'La carte n’est pas encore prête. Réessayez dans un instant.',
+        type: 'error',
+        closable: true,
+      })
+      return
+    }
+
+    try {
+      setExporting(true)
+      setExportNotice(null)
+
+      await exportMapDocument({
+        map,
+        format: fmt,
+        filename: buildMapExportFilename(commune, secteur, fmt),
+        title: 'Carte interactive',
+        subtitle: `${commune} (${province}) — ${secteur}`,
+        legendItems: exportLegendItems,
+        details: [
+          `Type de délimitation: ${delimitation === 'administrative' ? 'Administrative' : 'Thématique'}`,
+          `Fond de carte: ${baseMap === 'satellite' ? 'Satellite' : mapStyle}`,
+          `${layers.filter((layer) => layer.checked).length} couche(s) active(s)`,
+          `${allVisibleMarkers.length} point(s) visible(s)`,
+        ],
+      })
+
       toaster.create({
         title: 'Export réussi',
-        description: `Carte_${commune}_${secteur}.${fmt.toLowerCase()} téléchargé`,
+        description: `${buildMapExportFilename(commune, secteur, fmt)} téléchargé`,
         type: 'success',
         closable: true,
       })
-    }, 2000)
-  }
+      setExportNotice({
+        type: 'success',
+        message: `${buildMapExportFilename(commune, secteur, fmt)} a été généré.`,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Une erreur est survenue pendant l’export.'
+      toaster.create({
+        title: 'Échec de l’export',
+        description: message,
+        type: 'error',
+        closable: true,
+      })
+      setExportNotice({ type: 'error', message })
+    } finally {
+      setExporting(false)
+    }
+  }, [
+    allVisibleMarkers.length,
+    baseMap,
+    commune,
+    delimitation,
+    exportLegendItems,
+    layers,
+    mapStyle,
+    province,
+    secteur,
+  ])
 
   const tools = [
     { id: 'select', icon: <LuCrosshair className="w-3.5 h-3.5" />, label: 'Sélection' },
@@ -517,7 +694,10 @@ export function CarteInteractive({ onNavigate }: CarteInteractiveProps) {
           ].map(({ fmt, icon }) => (
             <button
               key={fmt}
-              onClick={() => handleExport(fmt)}
+              onClick={() => {
+                setExportFormat(fmt as MapExportFormat)
+                setExportNotice(null)
+              }}
               disabled={exporting}
               className={`flex items-center justify-center gap-1 text-xs font-medium border px-2 py-2 rounded-lg transition-colors ${
                 exportFormat === fmt
@@ -525,22 +705,35 @@ export function CarteInteractive({ onNavigate }: CarteInteractiveProps) {
                   : 'border-slate-200 hover:border-green-500 hover:text-green-700 text-slate-600'
               } disabled:opacity-50`}
             >
-              {exporting && exportFormat === fmt
-                ? <div className="w-3 h-3 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                : icon}
+              {icon}
               {fmt}
             </button>
           ))}
         </div>
-        {/* Grayed out "More options" */}
+        <p className="mt-2 text-xs text-slate-500">
+          {exportFormat
+            ? `${buildMapExportFilename(commune, secteur, exportFormat)} sera téléchargé.`
+            : 'Choisissez le format de votre carte.'}
+        </p>
         <button
-          disabled
-          className="mt-1.5 w-full flex items-center justify-center gap-1.5 text-xs text-slate-400 border border-slate-200 rounded-lg py-1.5 cursor-not-allowed bg-slate-50"
+          onClick={() => exportFormat && handleExport(exportFormat)}
+          disabled={!exportFormat || exporting}
+          className="mt-2 w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-white bg-green-700 hover:bg-green-600 rounded-lg py-2 transition-colors disabled:cursor-not-allowed disabled:bg-slate-300"
         >
-          <LuEllipsis className="w-3.5 h-3.5" />
-          Plus d'options
-          <LuLock className="w-3 h-3 ml-1" />
+          {exporting
+            ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            : <LuDownload className="w-4 h-4" />}
+          {exporting ? `Export ${exportFormat} en cours...` : exportFormat ? `Exporter en ${exportFormat}` : 'Choisir un format'}
         </button>
+        {exportNotice && (
+          <p className={`mt-2 rounded-lg px-2.5 py-2 text-xs ${
+            exportNotice.type === 'success'
+              ? 'bg-green-50 text-green-800'
+              : 'bg-red-50 text-red-800'
+          }`}>
+            {exportNotice.message}
+          </p>
+        )}
       </div>
     </>
   )
@@ -666,14 +859,36 @@ export function CarteInteractive({ onNavigate }: CarteInteractiveProps) {
               <LuFilter className="w-3.5 h-3.5" />
               Filtres
             </button>
-            <button
-              onClick={() => onNavigate('generer-carte')}
-              className="flex items-center gap-2 bg-green-700 hover:bg-green-600 text-white text-sm px-3 sm:px-4 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap"
-            >
-              <LuDownload className="w-4 h-4" />
-              <span className="hidden sm:inline">Générer l'atlas</span>
-              <span className="sm:hidden">Atlas</span>
-            </button>
+            <div className="relative flex">
+              <button
+                onClick={() => setQuickExportOpen((open) => !open)}
+                disabled={exporting}
+                className="flex items-center gap-2 bg-green-700 hover:bg-green-600 text-white text-sm px-3 sm:px-4 py-1.5 rounded-lg font-medium transition-colors whitespace-nowrap disabled:opacity-60"
+              >
+                <LuDownload className="w-4 h-4" />
+                <span className="hidden sm:inline">Générer l'atlas</span>
+                <span className="sm:hidden">Atlas</span>
+                <LuChevronDown className="w-4 h-4" />
+              </button>
+              {quickExportOpen && (
+                <div className="absolute right-0 top-full z-[1300] mt-1 w-44 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
+                  {(['PDF', 'PNG', 'JPG'] as MapExportFormat[]).map((format) => (
+                    <button
+                      key={format}
+                      onClick={() => {
+                        setQuickExportOpen(false)
+                        setExportFormat(format)
+                        handleExport(format)
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-green-50 hover:text-green-800"
+                    >
+                      {format === 'PDF' ? <LuFileText className="w-4 h-4" /> : <LuImage className="w-4 h-4" />}
+                      Télécharger en {format}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -726,102 +941,31 @@ export function CarteInteractive({ onNavigate }: CarteInteractiveProps) {
 
         {/* Map */}
         <div className="flex-1 relative min-h-0">
-          <MapContainer
+          <OpenLayersMap
             center={MAP_CENTER}
             zoom={14}
             className="w-full h-full"
-            zoomControl={false}
-          >
-            <MapController
-              mapRef={mapRef}
-              action={mapAction}
-              center={MAP_CENTER}
-              measureMode={activeTool === 'measure'}
-              onMapClick={handleMapClick}
-            />
-            <TileLayer key={tileUrl} url={tileUrl} />
-            <ZoomControl position="bottomright" />
+            tileUrl={tileUrl}
+            points={mapPoints}
+            polygons={mapPolygons}
+            lines={mapLines}
+            showZoomControl={false}
+            onReady={handleMapReady}
+            onPointClick={(point) => {
+              const payload = point.payload as { kind: string; label?: string; type?: string; lat?: number; lng?: number }
+              if (payload.kind !== 'marker' || !payload.label || !payload.type || payload.lat == null || payload.lng == null) {
+                return
+              }
 
-            {/* Administrative boundaries */}
-            {delimitation === 'administrative' && activeAdminBounds && (
-              <Polygon
-                positions={activeAdminBounds}
-                pathOptions={{
-                  color: '#15803d',
-                  fillColor: '#15803d',
-                  fillOpacity: 0.08,
-                  weight: 2.5,
-                  dashArray: '6 4',
-                }}
-              >
-                <LTooltip sticky>
-                  <span className="text-xs font-medium">
-                    {adminLevel === 'province' ? province
-                      : adminLevel === 'commune' ? commune
-                      : secteur}
-                  </span>
-                </LTooltip>
-              </Polygon>
-            )}
-
-            {/* Thematic boundaries */}
-            {delimitation === 'thematic' && activeThematicZones.map(zone => (
-              <Polygon
-                key={zone.id}
-                positions={zone.bounds}
-                pathOptions={{
-                  color: zone.color,
-                  fillColor: zone.color,
-                  fillOpacity: zone.fillOpacity,
-                  weight: 2,
-                  dashArray: zone.type === 'zone-sante' ? '8 4' : undefined,
-                }}
-              >
-                <LTooltip sticky>
-                  <div className="text-xs">
-                    <div className="font-medium">{zone.name}</div>
-                    <div className="text-slate-500 capitalize">{zone.type.replace(/-/g, ' ')}</div>
-                  </div>
-                </LTooltip>
-              </Polygon>
-            ))}
-
-            {/* Always show Kintambo reference bounds faintly */}
-            {delimitation === 'thematic' && (
-              <Polygon
-                positions={KINTAMBO_BOUNDS}
-                pathOptions={{ color: '#94a3b8', fillColor: '#94a3b8', fillOpacity: 0.03, weight: 1 }}
-              />
-            )}
-
-            {/* Markers */}
-            {allVisibleMarkers.map(m => (
-              <Marker
-                key={`${m.layerId}-${m.index}`}
-                position={[m.lat, m.lng]}
-                icon={createColoredIcon(m.color, m.emoji, selectedMarker?.label === m.label)}
-                eventHandlers={{
-                  click: () => setSelectedMarker({ label: m.label, type: m.layerId, lat: m.lat, lng: m.lng }),
-                }}
-              >
-                <Popup>
-                  <div className="text-sm font-medium">{m.label}</div>
-                  <div className="text-xs text-slate-500 capitalize">{LAYER_META[m.layerId]?.label || m.layerId}</div>
-                </Popup>
-              </Marker>
-            ))}
-
-            {/* Measurement rendering */}
-            {measurePoints.length >= 2 && (
-              <Polyline
-                positions={measurePoints}
-                pathOptions={{ color: '#2563eb', weight: 3, dashArray: '8 4' }}
-              />
-            )}
-            {measurePoints.map((p, i) => (
-              <Circle key={i} center={p} radius={20} pathOptions={{ color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.8 }} />
-            ))}
-          </MapContainer>
+              setSelectedMarker({
+                label: payload.label,
+                type: payload.type,
+                lat: payload.lat,
+                lng: payload.lng,
+              })
+            }}
+            onMapClick={activeTool === 'measure' ? handleMapClick : undefined}
+          />
 
           {/* Floating map controls */}
           <div className="absolute top-4 right-4 flex flex-col gap-1.5 z-[1000]">

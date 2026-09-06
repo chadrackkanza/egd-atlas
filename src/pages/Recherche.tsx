@@ -1,21 +1,12 @@
 'use client'
 import { useState, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, ZoomControl, useMap } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 import type { ViewId } from '../types'
+import { OpenLayersMap } from '../components/map/OpenLayersMap'
 import {
   LuSearch, LuSlidersHorizontal, LuX, LuMapPin, LuGlobe, LuCrosshair,
   LuGraduationCap, LuHeartPulse, LuDroplet, LuChurch, LuBuilding2, LuRoute,
   LuUsers, LuShield, LuLeaf, LuArrowRight, LuLayers, LuChevronDown, LuCompass,
 } from 'react-icons/lu'
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
 
 // DRC center approximately
 const DRC_CENTER: [number, number] = [-2.5, 23.5]
@@ -84,7 +75,6 @@ export function Recherche({ onNavigate }: RechercheProps) {
   const [category, setCategory] = useState('all')
   const [selectedPlace, setSelectedPlace] = useState<SearchPlace | null>(null)
   const [showFilters, setShowFilters] = useState(false)
-  const [map, setMap] = useState<L.Map | null>(null)
 
   const filtered = useMemo(() => {
     return PLACES.filter(p => {
@@ -99,20 +89,16 @@ export function Recherche({ onNavigate }: RechercheProps) {
 
   const handleSelectPlace = (place: SearchPlace) => {
     setSelectedPlace(place)
-    if (map) {
-      map.flyTo([place.lat, place.lng], 10, { duration: 1.2 })
-    }
   }
-
-  const placeIcon = (place: SearchPlace) => {
-    const style = TYPE_STYLES[place.type]
-    return L.divIcon({
-      html: `<div style="display:flex;align-items:center;justify-content:center;width:14px;height:14px;background:${style.color};border:2.5px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
-      className: '',
-      iconSize: [14, 14],
-      iconAnchor: [7, 7],
-    })
-  }
+  const mapPoints = filtered.map((place) => ({
+    id: place.id,
+    lat: place.lat,
+    lng: place.lng,
+    color: TYPE_STYLES[place.type].color,
+    label: place.name,
+    active: selectedPlace?.id === place.id,
+    payload: place,
+  }))
 
   return (
     <div className="flex flex-col lg:flex-row h-full min-h-0 overflow-hidden bg-slate-50">
@@ -282,36 +268,15 @@ export function Recherche({ onNavigate }: RechercheProps) {
 
       {/* Map */}
       <div className="flex-1 relative min-h-0">
-        <MapContainer
-          center={DRC_CENTER}
-          zoom={5}
+        <OpenLayersMap
+          center={selectedPlace ? [selectedPlace.lat, selectedPlace.lng] : DRC_CENTER}
+          zoom={selectedPlace ? 10 : 5}
+          animateView={Boolean(selectedPlace)}
           className="w-full h-full"
-          zoomControl={false}
-          ref={(instance) => { if (instance) setMap(instance) }}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <ZoomControl position="bottomright" />
-
-          {filtered.map(place => (
-            <Marker
-              key={place.id}
-              position={[place.lat, place.lng]}
-              icon={placeIcon(place)}
-              eventHandlers={{ click: () => handleSelectPlace(place) }}
-            >
-              <Popup>
-                <div className="min-w-[160px]">
-                  <div className="text-sm font-bold text-slate-900">{place.name}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{selectedPlace?.province || place.province}</div>
-                  <div className="text-xs text-slate-600 mt-1.5">{place.description}</div>
-                  {place.population && (
-                    <div className="text-xs text-slate-700 mt-1.5 font-medium">👥 {place.population} hab.</div>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+          tileUrl="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          points={mapPoints}
+          onPointClick={(point) => handleSelectPlace(point.payload as SearchPlace)}
+        />
 
         {/* Floating legend */}
         <div className="absolute bottom-8 left-3 sm:left-4 bg-white rounded-xl shadow-lg border border-slate-200 p-3 z-[1000]">

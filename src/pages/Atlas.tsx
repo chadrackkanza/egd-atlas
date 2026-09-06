@@ -1,9 +1,7 @@
-import { useState, useMemo, useCallback } from 'react'
-import { MapContainer, TileLayer, Polygon, Marker, Popup, ZoomControl, useMap } from 'react-leaflet'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import { useState, useCallback } from 'react'
 import { ATLAS_TEMPLATES, PROVINCES, COMMUNES_BY_PROVINCE, SECTEURS_BY_COMMUNE, THEMES, KINTAMBO_BOUNDS, MOCK_MARKERS, ZONES } from '../data/mockData'
 import type { ViewId, MapLayer } from '../types'
+import { OpenLayersMap } from '../components/map/OpenLayersMap'
 import {
   LuPlus, LuEye, LuBookOpen, LuMap, LuLayers, LuDownload,
   LuSparkles, LuChevronRight, LuX, LuCheck, LuFilePlus,
@@ -11,22 +9,6 @@ import {
   LuBuilding2, LuLeaf, LuUsers, LuShield, LuMapPin, LuFilter,
   LuArrowLeft, LuFileText, LuImage, LuCircleCheck, LuLoader,
 } from 'react-icons/lu'
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-})
-
-function createColoredIcon(color: string, emoji: string) {
-  return L.divIcon({
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.35);font-size:10px">${emoji}</div>`,
-    className: '',
-    iconSize: [22, 22],
-    iconAnchor: [11, 11],
-  })
-}
 
 const LAYER_META: Record<string, { color: string; emoji: string }> = {
   ecoles: { color: '#1d4ed8', emoji: '🎓' },
@@ -55,12 +37,6 @@ const ELEMENT_OPTIONS: { id: string; label: string; icon: React.ReactNode }[] = 
 
 const FORMATS = ['A4 Paysage', 'A4 Portrait', 'A3 Paysage', 'A3 Portrait']
 
-function MapRecenter({ lat, lng, zoom }: { lat: number; lng: number; zoom: number }) {
-  const map = useMap()
-  useMemo(() => { map.setView([lat, lng], zoom) }, [lat, lng, zoom, map])
-  return null
-}
-
 interface AtlasProps {
   onNavigate: (view: ViewId) => void
 }
@@ -77,6 +53,7 @@ export function Atlas({ onNavigate }: AtlasProps) {
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
   const [showConfig, setShowConfig] = useState(false)
+  const [selectedMarker, setSelectedMarker] = useState<{ label: string; type: string } | null>(null)
 
   const communes = COMMUNES_BY_PROVINCE[province] || []
   const secteurs = SECTEURS_BY_COMMUNE[commune] || []
@@ -91,6 +68,25 @@ export function Atlas({ onNavigate }: AtlasProps) {
   const tileUrl = baseMap === 'satellite'
     ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
     : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  const previewPoints = activeLayers.flatMap(layerId => {
+    const markers = MOCK_MARKERS[layerId]
+    const meta = LAYER_META[layerId] || { color: '#666', emoji: '●' }
+    if (!markers) return []
+
+    return markers.map((marker, index) => ({
+      id: `${layerId}-${index}`,
+      lat: marker.lat,
+      lng: marker.lng,
+      color: meta.color,
+      emoji: meta.emoji,
+      label: marker.label,
+      active: selectedMarker?.label === marker.label,
+      payload: {
+        label: marker.label,
+        type: layerId,
+      },
+    }))
+  })
 
   const handleGenerate = () => {
     setGenerating(true)
@@ -485,33 +481,28 @@ export function Atlas({ onNavigate }: AtlasProps) {
                   </div>
                 ) : (
                   <>
-                    <MapContainer
-                      center={[-4.302, 15.310]}
+                    <OpenLayersMap
+                      center={[-4.302, 15.31]}
                       zoom={14}
                       className="w-full h-full"
-                      zoomControl={false}
-                    >
-                      <MapRecenter lat={-4.302} lng={15.310} zoom={14} />
-                      <TileLayer url={tileUrl} />
-                      <ZoomControl position="bottomright" />
-                      <Polygon
-                        positions={KINTAMBO_BOUNDS}
-                        pathOptions={{ color: '#15803d', fillColor: '#15803d', fillOpacity: 0.08, weight: 2, dashArray: '6 4' }}
-                      />
-                      {activeLayers.map(layerId => {
-                        const markers = MOCK_MARKERS[layerId]
-                        if (!markers) return null
-                        const meta = LAYER_META[layerId] || { color: '#666', emoji: '●' }
-                        return markers.map((m, i) => (
-                          <Marker key={`${layerId}-${i}`} position={[m.lat, m.lng]} icon={createColoredIcon(meta.color, meta.emoji)}>
-                            <Popup>
-                              <div className="text-sm font-medium">{m.label}</div>
-                              <div className="text-xs text-slate-500 capitalize">{layerId}</div>
-                            </Popup>
-                          </Marker>
-                        ))
-                      })}
-                    </MapContainer>
+                      tileUrl={tileUrl}
+                      points={previewPoints}
+                      polygons={[
+                        {
+                          id: 'kintambo-bounds',
+                          positions: KINTAMBO_BOUNDS,
+                          color: '#15803d',
+                          fillColor: '#15803d',
+                          fillOpacity: 0.08,
+                          weight: 2,
+                          dashArray: '6 4',
+                        },
+                      ]}
+                      onPointClick={(point) => {
+                        const payload = point.payload as { label: string; type: string }
+                        setSelectedMarker(payload)
+                      }}
+                    />
 
                     {/* Floating legend */}
                     <div className="absolute top-4 left-4 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 p-3 z-[1000]">
@@ -539,6 +530,23 @@ export function Atlas({ onNavigate }: AtlasProps) {
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                       <span className="text-xs font-medium text-slate-700">{commune} — {secteur}</span>
                     </div>
+
+                    {selectedMarker && (
+                      <div className="absolute right-4 top-16 bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-lg p-3 z-[1000] min-w-[220px]">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-slate-900">{selectedMarker.label}</div>
+                            <div className="text-xs text-slate-500 capitalize">{selectedMarker.type}</div>
+                          </div>
+                          <button
+                            onClick={() => setSelectedMarker(null)}
+                            className="text-slate-400 hover:text-slate-600"
+                          >
+                            <LuX className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Active themes chips */}
                     <div className="absolute bottom-4 left-4 flex flex-wrap gap-1.5 z-[1000] max-w-[60%]">
